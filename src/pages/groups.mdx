@@ -12,8 +12,11 @@ The group model contains all the information about your groups, including what c
 ### Properties
 
 <Properties>
-  <Property name="id" type="string">
-    Unique identifier for the group.
+  <Property name="_id" type="string">
+    Unique identifier for the group
+  </Property>
+  <Property name="created_user_id" type="string">
+    Foreign key referring to the user who created the group.
   </Property>
   <Property name="name" type="string">
     The name for the group.
@@ -21,20 +24,14 @@ The group model contains all the information about your groups, including what c
   <Property name="description" type="string">
     The description for the group.
   </Property>
-  <Property name="avatar_url" type="string">
-    The avatar image URL for the group.
-  </Property>
-  <Property name="conversation_id" type="string">
-    Unique identifier for the conversation that belongs to the group.
-  </Property>
-  <Property name="contacts" type="array">
-    An array of contact objects that are members of the group.
-  </Property>
   <Property name="created_at" type="timestamp">
     Timestamp of when the group was created.
   </Property>
-  <Property name="archived_at" type="timestamp">
-    Timestamp of when the group was archived.
+  <Property name="updated_at" type="timestamp">
+    Timestamp of when the group was last updated.
+  </Property>
+  <Property name="participants" type="object">
+    An object containing information about participants in the group.
   </Property>
 </Properties>
 
@@ -94,42 +91,36 @@ The group model contains all the information about your groups, including what c
     </CodeGroup>
 
     ```json {{ title: 'Response' }}
-    {
-      "has_more": false,
-      "data": [
+     {
+      "status": 200,
+      "success": true,
+      "message": "Daftar group",
+      "data": {
         {
-          "id": "l7cGNIBKZiNJ6wqF",
-          "name": "Plaza Hotel",
-          "description": "World-renowned.",
-          "avatar_url": "https://assets.protocol.chat/avatars/plazahotel.jpg",
-          "conversation_id": "ZYjVAbCE9g5XRlra",
-          "contacts": [
+          "group": {
+            "_id": "group_id_here",
+            "name": "Awesome Group",
+            "description": "A group for awesome people..."
+          },
+          "participants": [
             {
-              "username": "Hector"
-              // ...
+              "_id": "participant_id_1",
+              "user_id": "user_id_of_participant_1",
+              "joined_at": "2023-03-20T15:30:00Z",
+              "user": {
+                "_id": "user_id_of_participant_1",
+                "display_name": "Participant 1",
+                "avatar_url": "https://example.com/avatar1.jpg"
+              },
             },
             {
-              "username": "Cedric"
-              // ...
-            },
-            {
-              "username": "Hester"
-              // ...
-            },
-            {
-              "username": "Cliff"
-              // ...
+              "_id": "participant_id_2",
+              ....... //
             }
-          ],
-          "created_at": 692233200,
-          "archived_at": null
-        },
-        {
-          "id": "hSIhXBhNe8X1d8Et"
-          // ...
+          ]
         }
-      ]
-    }
+      }
+     }
     ```
 
   </Col>
@@ -145,7 +136,11 @@ The group model contains all the information about your groups, including what c
     This endpoint allows you to create a new group conversation between you and a group of your Protocol contacts.
 
     ### Required attributes
-
+    <Properties>
+      <Property name="created_user_id" type="string">
+        The created_user_id for the group.
+      </Property>
+    </Properties>
     <Properties>
       <Property name="name" type="string">
         The name for the group.
@@ -161,8 +156,8 @@ The group model contains all the information about your groups, including what c
       <Property name="avatar_url" type="string">
         The avatar image URL for the group.
       </Property>
-      <Property name="contacts" type="array">
-        An array of contact objects that are members of the group.
+      <Property name="participants" type="array">
+        An array of participant objects that are members of the group.
       </Property>
     </Properties>
 
@@ -174,6 +169,7 @@ The group model contains all the information about your groups, including what c
     ```bash {{ title: 'cURL' }}
     curl https://api.protocol.chat/v1/groups \
       -H "Authorization: Bearer {token}" \
+      -d created_user_id="615b2d8baf9a0a001234567a"
       -d name="Plaza Hotel"
     ```
 
@@ -183,6 +179,7 @@ The group model contains all the information about your groups, including what c
     const client = new ApiClient(token)
 
     await client.groups.create({
+      created_user_id: '615b2d8baf9a0a001234567a',
       name: 'Plaza Hotel',
     })
     ```
@@ -199,6 +196,7 @@ The group model contains all the information about your groups, including what c
     $client = new \Protocol\ApiClient($token);
 
     $client->groups->create([
+      'created_user_id' => '615b2d8baf9a0a001234567a',
       'name' => 'Plaza Hotel',
     ]);
     ```
@@ -206,16 +204,24 @@ The group model contains all the information about your groups, including what c
     </CodeGroup>
 
     ```json {{ title: 'Response' }}
-    {
-      "id": "l7cGNIBKZiNJ6wqF",
-      "name": "Plaza Hotel",
-      "description": null,
-      "avatar_url": null,
-      "conversation_id": "ZYjVAbCE9g5XRlra",
-      "contacts": [],
-      "created_at": 692233200,
-      "archived_at": null
-    }
+     {
+      "status": 201,
+      "success": true,
+      "message": "User created successfully",
+      "data": {
+        {
+          "_id": "615b2d8baf9a0a001234567a",
+          "created_user_id": "615b2d8baf9a0a0012345678",
+          "name": "Plaza Hotel",
+          "description": null,
+          "avatar_url": null,
+          "participants": [],
+          "created_at": "2023-08-25T12:00:00Z",
+          "updated_at": "2023-08-25T12:00:00Z",
+          "archived_at": null
+        }
+      }
+     }
     ```
 
   </Col>
@@ -266,31 +272,42 @@ The group model contains all the information about your groups, including what c
 
     ```json {{ title: 'Response' }}
     {
-      "id": "l7cGNIBKZiNJ6wqF",
-      "name": "Plaza Hotel",
-      "description": "World-renowned.",
-      "avatar_url": "https://assets.protocol.chat/avatars/plazahotel.jpg",
-      "conversation_id": "ZYjVAbCE9g5XRlra",
-      "contacts": [
+      "status": 200,
+      "success": true,
+      "message": "Group ditemukan",
+      "data": {
         {
-          "username": "Hector"
-          // ...
-        },
-        {
-          "username": "Cedric"
-          // ...
-        },
-        {
-          "username": "Hester"
-          // ...
-        },
-        {
-          "username": "Cliff"
-          // ...
+          "group": {
+            "_id": "group_id_here",
+            "name": "Awesome Group",
+            "description": "A group for awesome people..."
+          },
+          "participants": [
+            {
+              "_id": "participant_id_1",
+              "user_id": "user_id_of_participant_1",
+              "joined_at": "2023-03-20T15:30:00Z",
+              "user": {
+                "_id": "user_id_of_participant_1",
+                "display_name": "Participant 1",
+                "avatar_url": "https://example.com/avatar1.jpg"
+              },
+            },
+            {
+              "_id": "participant_id_2",
+               "user_id": "user_id_of_participant_1",
+              "joined_at": "2023-03-20T15:30:00Z",
+              "user": {
+                "_id": "user_id_of_participant_1",
+                "display_name": "Participant 1",
+                "avatar_url": "https://example.com/avatar1.jpg"
+              },
+            }
+          ],
+          "created_at": "2023-08-25T12:00:00Z",
+          "updated_at": "2023-08-25T12:00:00Z",
         }
-      ],
-      "created_at": 692233200,
-      "archived_at": null
+      }
     }
     ```
 
@@ -318,8 +335,8 @@ The group model contains all the information about your groups, including what c
       <Property name="avatar_url" type="string">
         The new avatar image URL for the group.
       </Property>
-      <Property name="contacts" type="array">
-        An array of contact objects that are members of the group.
+      <Property name="participants" type="array">
+        An array of participant objects that are members of the group.
       </Property>
       <Property name="archived_at" type="timestamp">
         Timestamp of when the group was archived.
@@ -367,32 +384,44 @@ The group model contains all the information about your groups, including what c
 
     ```json {{ title: 'Response' }}
     {
-      "id": "l7cGNIBKZiNJ6wqF",
-      "name": "Plaza Hotel",
-      "description": "The finest in New York.",
-      "avatar_url": "https://assets.protocol.chat/avatars/plazahotel.jpg",
-      "conversation_id": "ZYjVAbCE9g5XRlra",
-      "contacts": [
+      "status": 200,
+      "success": true,
+      "message": "Group berhail di update",
+      "data": {
         {
-          "username": "Hector"
-          // ...
-        },
-        {
-          "username": "Cedric"
-          // ...
-        },
-        {
-          "username": "Hester"
-          // ...
-        },
-        {
-          "username": "Cliff"
-          // ...
+          "group": {
+            "_id": "group_id_here",
+            "name": "Awesome Group",
+            "description": "A group for awesome people..."
+          },
+          "participants": [
+            {
+              "_id": "participant_id_1",
+              "user_id": "user_id_of_participant_1",
+              "joined_at": "2023-03-20T15:30:00Z",
+              "user": {
+                "_id": "user_id_of_participant_1",
+                "display_name": "Participant 1",
+                "avatar_url": "https://example.com/avatar1.jpg"
+              },
+            },
+            {
+              "_id": "participant_id_2",
+               "user_id": "user_id_of_participant_1",
+              "joined_at": "2023-03-20T15:30:00Z",
+              "user": {
+                "_id": "user_id_of_participant_1",
+                "display_name": "Participant 1",
+                "avatar_url": "https://example.com/avatar1.jpg"
+              },
+            }
+          ],
+          "created_at": "2023-08-25T12:00:00Z",
+          "updated_at": "2023-08-25T12:00:00Z",
+          "archived_at": null
         }
-      ],
-      "created_at": 692233200,
-      "archived_at": null
-    },
+      }
+    }
     ```
 
   </Col>
