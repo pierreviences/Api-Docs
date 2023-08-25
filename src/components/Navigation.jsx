@@ -202,6 +202,7 @@ export const navigation = [
       { title: 'Users', href: '/users' },
       { title: 'Contacts', href: '/contacts' },
       { title: 'Groups', href: '/groups' },
+      { title: 'Participants', href: '/participants' },
       { title: 'Conversations', href: '/conversations' },
       { title: 'Messages', href: '/messages' },
       { title: 'Attachments', href: '/attachments' },
